@@ -27,22 +27,22 @@ describe('http-server-streams/file-server-post', () => {
     describe('POST', () => {
       it('возвращается ошибка 409 при создании файла, который есть', (done) => {
         fse.copyFileSync(
-            path.join(fixturesFolder, 'small.png'),
-            path.join(filesFolder, 'small.png'),
+          path.join(fixturesFolder, 'small.png'),
+          path.join(filesFolder, 'small.png'),
         );
 
         const mtime = fse.statSync(path.join(filesFolder, 'small.png')).mtime;
 
         const request = http.request(
-            'http://localhost:3001/small.png',
-            {method: 'POST'},
-            (response) => {
-              const newMtime = fse.statSync(path.join(filesFolder, 'small.png')).mtime;
+          'http://localhost:3001/small.png',
+          {method: 'POST'},
+          (response) => {
+            const newMtime = fse.statSync(path.join(filesFolder, 'small.png')).mtime;
 
-              expect(response.statusCode, 'статус код ответа 409').to.equal(409);
-              expect(mtime, 'файл не должен перезаписываться').to.eql(newMtime);
-              done();
-            });
+            expect(response.statusCode, 'статус код ответа 409').to.equal(409);
+            expect(mtime, 'файл не должен перезаписываться').to.eql(newMtime);
+            done();
+          });
 
         request.on('error', done);
         fse.createReadStream(path.join(fixturesFolder, 'small.png')).pipe(request);
@@ -50,22 +50,22 @@ describe('http-server-streams/file-server-post', () => {
 
       it('если тело запроса пустое файл не перезаписывается', (done) => {
         fse.copyFileSync(
-            path.join(fixturesFolder, 'small.png'),
-            path.join(filesFolder, 'small.png'),
+          path.join(fixturesFolder, 'small.png'),
+          path.join(filesFolder, 'small.png'),
         );
 
         const mtime = fse.statSync(path.join(filesFolder, 'small.png')).mtime;
 
         const request = http.request(
-            'http://localhost:3001/small.png',
-            {method: 'POST'},
-            (response) => {
-              const newMtime = fse.statSync(path.join(filesFolder, 'small.png')).mtime;
+          'http://localhost:3001/small.png',
+          {method: 'POST'},
+          (response) => {
+            const newMtime = fse.statSync(path.join(filesFolder, 'small.png')).mtime;
 
-              expect(response.statusCode, 'статус код ответа сервера 409').to.equal(409);
-              expect(mtime, 'файл не должен перезаписываться').to.eql(newMtime);
-              done();
-            });
+            expect(response.statusCode, 'статус код ответа сервера 409').to.equal(409);
+            expect(mtime, 'файл не должен перезаписываться').to.eql(newMtime);
+            done();
+          });
 
         request.on('error', done);
         request.end();
@@ -73,22 +73,22 @@ describe('http-server-streams/file-server-post', () => {
 
       it('при попытке создания слишком большого файла - ошибка 413', (done) => {
         const request = http.request(
-            'http://localhost:3001/big.png',
-            {method: 'POST'},
-            (response) => {
-              expect(
-                  response.statusCode,
-                  'статус код ответа сервера 413'
-              ).to.equal(413);
+          'http://localhost:3001/big.png',
+          {method: 'POST'},
+          (response) => {
+            expect(
+              response.statusCode,
+              'статус код ответа сервера 413'
+            ).to.equal(413);
 
-              setTimeout(() => {
-                expect(
-                    fse.existsSync(path.join(filesFolder, 'big.png')),
-                    'файл big.png не должен оставаться на диске'
-                ).to.be.false;
-                done();
-              }, 100);
-            });
+            setTimeout(() => {
+              expect(
+                fse.existsSync(path.join(filesFolder, 'big.png')),
+                'файл big.png не должен оставаться на диске'
+              ).to.be.false;
+              done();
+            }, 100);
+          });
 
         request.on('error', (err) => {
           // EPIPE/ECONNRESET error should occur because we try to pipe after res closed
@@ -100,21 +100,21 @@ describe('http-server-streams/file-server-post', () => {
 
       it('успешное создание файла', (done) => {
         const request = http.request(
-            'http://localhost:3001/small.png',
-            {method: 'POST'},
-            (response) => {
-              expect(
-                  response.statusCode,
-                  'статус код ответа сервера 201'
-              ).to.equal(201);
+          'http://localhost:3001/small.png',
+          {method: 'POST'},
+          (response) => {
+            expect(
+              response.statusCode,
+              'статус код ответа сервера 201'
+            ).to.equal(201);
 
-              expect(
-                  fse.existsSync(path.join(filesFolder, 'small.png')),
-                  'файл small.png должен быть на диске'
-              ).to.be.true;
+            expect(
+              fse.existsSync(path.join(filesFolder, 'small.png')),
+              'файл small.png должен быть на диске'
+            ).to.be.true;
 
-              done();
-            });
+            done();
+          });
 
         request.on('error', done);
         fse.createReadStream(path.join(fixturesFolder, 'small.png')).pipe(request);
@@ -122,19 +122,19 @@ describe('http-server-streams/file-server-post', () => {
 
       it('файл не должен оставаться на диске при обрыве соединения', (done) => {
         const request = http.request(
-            'http://localhost:3001/example.txt',
-            {method: 'POST'},
-            (response) => {
-              expect.fail('there should be no response');
-            });
+          'http://localhost:3001/example.txt',
+          {method: 'POST'},
+          (response) => {
+            expect.fail('there should be no response');
+          });
 
         request.on('error', (err) => {
           if (err.code !== 'ECONNRESET') return done(err);
 
           setTimeout(() => {
             expect(
-                fse.existsSync(path.join(filesFolder, 'example.txt')),
-                'файл example.txt не должен оставаться на диске'
+              fse.existsSync(path.join(filesFolder, 'example.txt')),
+              'файл example.txt не должен оставаться на диске'
             ).to.be.false;
 
             done();
@@ -150,12 +150,12 @@ describe('http-server-streams/file-server-post', () => {
 
       it('если путь вложенный - возвращается ошибка 400', (done) => {
         const request = http.request(
-            'http://localhost:3001/nested/path',
-            {method: 'POST'},
-            (response) => {
-              expect(response.statusCode, 'статус код ответа 400').to.equal(400);
-              done();
-            });
+          'http://localhost:3001/nested/path',
+          {method: 'POST'},
+          (response) => {
+            expect(response.statusCode, 'статус код ответа 400').to.equal(400);
+            done();
+          });
 
         request.on('error', done);
         request.end();
